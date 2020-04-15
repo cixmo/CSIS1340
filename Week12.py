@@ -1,6 +1,11 @@
 roster = ['Bob','Caleb','Michael','Morgan','Nick','Oscar','Pedro','Victor','William']
 
 def student_check(roster):
+    """
+    This function prompts user for student name, compares input name with external list, and prints a statement based
+    on if the name exist or not. Runs in While loop until user issues 'q'.
+    :param roster:
+    """
     student = None
     print("Welcome to the student checker!")
     while True:
