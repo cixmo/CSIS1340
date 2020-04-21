@@ -1,6 +1,4 @@
 import random
-import re
-import sys
 
 db = {'State': 0,  # 0:Generate / 1:Active / 2:Won / 3:Loss / 4:Post / 5:Terminate
       'Counter': {'Guess': 0, 'Win': 0, 'Loss': 0, 'Game': 0},
@@ -36,6 +34,11 @@ db = {'State': 0,  # 0:Generate / 1:Active / 2:Won / 3:Loss / 4:Post / 5:Termina
 
 
 def refresh_counter(data):
+    '''
+    Updates counter data in the dictionary to provide accurate states during the gameplay.
+    :param data (dict): Dictionary hosting the counter data.
+    :return: nothing
+    '''
     state = db['State']
     if state is 0:  # Generate
         db['Counter']['Game'] += 1
@@ -50,10 +53,18 @@ def refresh_counter(data):
 
 
 def game():
+    '''
+    Main function for the game that is loaded onload.
+    :return:
+    '''
     word = []
     workspace = []
 
     def create():
+        '''
+        Randomly selects new game word from word list and builds user workspace for game.
+        :return: int:1(active game state)
+        '''
         word.clear()
         workspace.clear()
         selection = random.choice(db['List'])
@@ -65,11 +76,19 @@ def game():
         return 1
 
     def exit():
+        '''
+        Prints end game message with counter data and changes game state to 5 (Terminate State).
+        :return: int:5(terminate game state)
+        '''
         print("\n Sorry to see you go. You have won {} games and lost {} games.  See you again soon."
               .format(db['Counter']['Win'], db['Counter']['Loss']))
-        db['State'] = 5
+        return 5
 
     def status():
+        '''
+        Prints status message based on current game state.
+        :return:
+        '''
         show_word = str(''.join(word))
         show_workspace = str(''.join(workspace))
         show_guesses = str(', '.join(db['Guess']['List']))
@@ -94,11 +113,17 @@ def game():
                 db['State'] = 0
                 db['State'] = create()
             elif prompt == 'n':
-                exit()
+                db['State'] = exit()
 
     def validate(data):
+        '''
+        Validates user input data against game data.  Checks if input is a command, single alpha letter, number, special
+        character, or if data already exist from the previous responses in current round.
+        :param data:Input Data
+        :return:
+        '''
         if data is '!':
-            exit()
+            db['State'] = exit()
             refresh_counter(db)
             return None
         elif not data.isalpha() and len(data) == 1 or data.upper() in db['Guess']['List']:
@@ -112,6 +137,12 @@ def game():
             return data.upper()
 
     def process():
+        '''
+        Processes word after validation.  If guessed letter is in word, then workspace is updated.  If guessed letter
+        is not in word, then message is returned stating it was not a winning letter.  Afterward, Guess list is updated
+        with additional value then input is set to None.
+        :return: None
+        '''
         if db['Input'] in word:
             word_indexes = [i for i, x in enumerate(word) if x == str(db['Input'])]
             for word_index in word_indexes:
@@ -120,9 +151,8 @@ def game():
         else:
             print("{} is not a winning letter for you.  Please choose again.".format(db['Input']))
         db['Guess']['List'].append(str(db['Input']))
-        db['Input'] = None
         refresh_counter(db)
-        return
+        return None
 
     while db['State'] != 5:
         if not word:
@@ -134,7 +164,7 @@ def game():
                     prompt = input("Please choose a single letter from the alphabet ('!' to quit): ")
                     db['Input'] = validate(prompt)
                 else:
-                    process()
+                    db['Input'] = process()
             else:
                 db['State'] = 2
                 status()
